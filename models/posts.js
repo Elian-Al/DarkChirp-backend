@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const postSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'users',
         required: [true, 'L\'auteur du post est obligatoire.'],
     },
     content: {
@@ -15,11 +15,11 @@ const postSchema = new Schema({
     },
     likes: [{
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'users',
     }],
     saved: [{
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'users',
     }],
     hashtags: [{
         type: String,
@@ -34,6 +34,6 @@ postSchema.index({ hashtags: 1});
 postSchema.index({ user: 1 });
 postSchema.index({ createdAt: -1 });
 
-const Post = mongoose.model('Post', postSchema);
+const Post = mongoose.model('posts', postSchema);
 
 module.exports = Post;

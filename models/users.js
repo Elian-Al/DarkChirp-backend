@@ -28,16 +28,16 @@ const userSchema = new Schema({
     bio: String,
     likedPosts: [{
         type: Schema.Types.ObjectId,
-        ref: 'Posts',
+        ref: 'posts',
     }],
     savedPosts: [{
         type: Schema.Types.ObjectId,
-        ref: 'Posts',
+        ref: 'posts',
     }]
 }, {
     timestamps: true,
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('users', userSchema);
 
 module.exports = User;
