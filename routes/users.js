@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const authController = require('../controllers/auth.controllers');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -7,8 +8,10 @@ router.get('/', function(req, res, next) {
 });
 
 // Création d'un utilisateur
+router.post('/signup', authController.signup);
 
 //Connexion d'un utilisateur
+router.post('/signin', authController.signin);
 
 //Récupérer les informations du profil
 
