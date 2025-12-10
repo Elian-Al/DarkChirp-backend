@@ -7,9 +7,9 @@ const hashRounds = 10;
 
 //Inscription
 exports.signup = async (req, res) => {
-    const { username, firstname, password} = req.body;
+    const { username, firstname, lastname, password} = req.body;
 
-    if (!username || !firstname || !password) {
+    if (!username || !firstname || !lastname || !password) {
         return res.status(400).json({ result: false, message : 'Tous les champs sont requis.' });
     }
 
@@ -42,7 +42,7 @@ exports.signup = async (req, res) => {
             data: {
                 username: savedUser.username,
                 firstname: savedUser.firstname,
-                lastname: savedUser.firstname,
+                lastname: savedUser.lastname,
             }
         });
 
@@ -65,7 +65,7 @@ exports.signin = async (req, res) => {
         const user = await User.findOne({ username: username.toLowerCase() });
         if (!user) {
             return res.status(401).json({ result: false, message: 'Identifiant ou mot de passe incorrect.' });
-        }
+        }        
 
         //Comparaison du mot de passe haché
         const isPasswordValid = await bcrypt.compare(password, user.password);
