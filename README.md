@@ -59,9 +59,10 @@ npm install
 
 ### 3. Configuration (.env)
 Créez un fichier .env à la racine du projet et ajoutez vos variables :
-
+```Extrait de code
 CONNECTION_STRING=votre_lien_mongodb
 JWT_SECRET=votre_phrase_secrete
+```
 
 ### 4. Lancer le serveur
 ```bash
@@ -73,8 +74,8 @@ npm start
 npm run dev
 ```
 
-🔗 Liens
+## 🔗 Liens
 Frontend Web : [DarkChirp-frontend-web](https://github.com/Elian-Al/DarkChirp-frontend-web)
 
-📝 Auteur
+## 📝 Auteur
 Elian - [GitHub Profile](https://github.com/Elian-Al)
