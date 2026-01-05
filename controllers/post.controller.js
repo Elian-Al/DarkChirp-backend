@@ -6,7 +6,7 @@ const extractHashtags = (text) => {
     const matches = text.match(regex);
 
     if (matches) {
-        return matches.map(match => match.slices(1).toLowerCase());
+        return matches.map(match => match.slice(1).toLowerCase());
     }
     return [];
 };
@@ -56,6 +56,7 @@ exports.getAllPosts = async (req, res) => {
         const allPosts = await Post.find()
             .populate('user', 'username firstname lastname profilePicture')
             .sort({ createdAt: -1 });
+            
 
         res.status(200).json({
             result: true,
@@ -107,6 +108,8 @@ exports.deletePost = async (req, res) => {
 exports.likePost = async (req, res) => {
     const postId = req.params.postId;
     const userId = req.userId;
+    console.log(postId, userId);
+    
 
     try {
         const [post, user] = await Promise.all([

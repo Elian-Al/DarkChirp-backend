@@ -20,6 +20,7 @@ module.exports = (req, res, next) => {
 
     // 2. Extraction du token (suppression de "Bearer ")
     const token = authHeader.split(' ')[1];
+    
 
     // 3. Vérification et décodage du token
     // La fonction vérifie la signature du token avec la clé secrète (.env)

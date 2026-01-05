@@ -7,9 +7,9 @@ const hashRounds = 10;
 
 //Inscription
 exports.signup = async (req, res) => {
-    const { username, firstname, lastname, password} = req.body;
+    const { username, firstname, lastname, email, password} = req.body;
 
-    if (!username || !firstname || !lastname || !password) {
+    if (!username || !firstname || !lastname || !email || !password) {
         return res.status(400).json({ result: false, message : 'Tous les champs sont requis.' });
     }
 
@@ -31,6 +31,7 @@ exports.signup = async (req, res) => {
             username: username.toLowerCase(),
             firstname,
             lastname,
+            email,
             password: hashedPassword,
         });
 
@@ -43,6 +44,7 @@ exports.signup = async (req, res) => {
                 username: savedUser.username,
                 firstname: savedUser.firstname,
                 lastname: savedUser.lastname,
+                email: savedUser.email,
             }
         });
 
@@ -87,8 +89,10 @@ exports.signin = async (req, res) => {
             token,
             username: user.username,
             firstname: user.firstname,
+            email: user.email,
             likedPosts: user.likedPosts,
             savedPosts: user.savedPosts,
+            profilePicture: user.profilePicture,
         });
 
     } catch (error) {
