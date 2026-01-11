@@ -7,7 +7,7 @@ S'il est valide, il injecte l'ID de l'utilisateur dans l'objet req.
 
 module.exports = (req, res, next) => {
   try {
-    // 1. Récupération et vérification du header Authorization
+    // Récupération et vérification du header Authorization
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -18,22 +18,19 @@ module.exports = (req, res, next) => {
       });
     }
 
-    // 2. Extraction du token (suppression de "Bearer ")
+    // Extraction du token (suppression de "Bearer ")
     const token = authHeader.split(' ')[1];
     
-
-    // 3. Vérification et décodage du token
-    // La fonction vérifie la signature du token avec la clé secrète (.env)
+    // Vérification et décodage du token
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     
     // Le payload décodé contient l'ID de l'utilisateur que nous avons généré au signin
     const userId = decodedToken.userId;
 
-    // 4. Ajout de l'ID de l'utilisateur à l'objet requête
-    // C'est CRUCIAL. Cela permet aux contrôleurs (ex: createPost) de savoir qui poste.
+    // Ajout de l'ID de l'utilisateur à l'objet requête    
     req.userId = userId;
 
-    // 5. Tout est valide, on passe au contrôleur suivant.
+    // Tout est valide, on passe au contrôleur suivant.
     next();
 
   } catch (error) {

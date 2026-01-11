@@ -205,5 +205,85 @@ exports.getPostsByHashtag = async (req, res) => {
         console.error('Erreur lors de la recherche par hashtag :', error);
         res.status(500).json({ result: false, message: 'Erreur serveur lors du filtrage.' });
     }
-}
+};
+
+//Récupérer tous les posts d'un utilisateur
+exports.getAllUserPosts = async (req, res) => {
+    const userId = req.userId;
+    const skip = parseInt(req.query.skip) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    try {
+        const userPosts = await Post.find({user: userId})
+            .skip(skip)
+            .limit(limit)
+            .populate('user', 'username firstname lastname profilePicture')
+            .sort({ createdAt: -1 })
+        
+        console.log(userPosts.length);        
+
+        res.status(200).json({
+            result: true,
+            data: userPosts,
+            count: userPosts.length,
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des posts :', error);
+        res.status(500).json({ result: false, message: 'Erreur serveur lors de la récupération des Posts de l\'utilisateur.' });
+    }
+};
+
+//Récupéré tous les posts qu'un utilisateur à aimé
+exports.getLikedPosts = async (req, res) => {
+    const userId = req.userId;
+    const skip = parseInt(req.query.skip) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    try {
+        const likedPosts = await User.findById(userId)
+            .select('likedPosts')
+            .populate('likedPosts', 'createdAt content _id')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+
+        console.log(likedPosts);
+
+        res.status(200).json({
+            result: true,
+            data: likedPosts
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des posts :', error);
+        res.status(500).json({ result: false, message: 'Erreur serveur lors de la récupération des Posts.' });
+    }
+};
+
+//Récupéré tous les postes qu'un utilisateur a sauvegardé
+exports.getSavedPosts = async (req, res) => {
+    const userId = req.userId;
+    const skip = parseInt(req.query.skip) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    try {
+        const savedPosts = await User.findById(userId)
+            .select('savedPosts')
+            .populate('savedPosts', 'createdAt content _id')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+
+        console.log(savedPosts);
+
+        res.status(200).json({
+            result: true,
+            data: savedPosts,
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors de la récupération des posts :', error);
+        res.status(500).json({ result: false, message: 'Erreur serveur lors de la récupération des Posts.' });
+    }
+};
 

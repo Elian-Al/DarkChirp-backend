@@ -6,10 +6,10 @@ const postController = require('../controllers/post.controller');
 // POST /posts/new : Créer un nouveau post
 router.post('/new', authMiddleware, postController.createPost);
 
-// 2. GET /posts/ : Récupérer le fil d'actualité (tous les Chirps)
+// GET /posts/ : Récupérer le fil d'actualité (tous les Chirps)
 router.get('/', postController.getAllPosts);
 
-// 3. DELETE /posts/:postId : Supprimer un Chirp
+// DELETE /posts/:postId : Supprimer un Chirp
 router.delete('/:postId', authMiddleware, postController.deletePost);
 
 // Route Like/Unlike (Protégée)
@@ -20,6 +20,15 @@ router.post('/save/:postId', authMiddleware, postController.savePost);
 
 // Route Filtrage par Hashtag (Peut être publique)
 router.get('/hashtag/:hashtagName', postController.getPostsByHashtag);
+
+//Récuperer les posts d'un utilisateur
+router.get('/user', authMiddleware, postController.getAllUserPosts);
+
+//Récuperer les posts liké par l'utilisateur
+router.get('/user/liked', authMiddleware, postController.getLikedPosts);
+
+//Récuperer les posts liké par l'utilisateur
+router.get('/user/saved', authMiddleware, postController.getSavedPosts);
 
 
 module.exports = router;

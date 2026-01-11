@@ -17,8 +17,6 @@ router.post('/signin', authController.signin);
 
 //Mettre à jour les informations du profil
 
-//Récuperer les posts liké par l'utilisateur
-
 //Récuperer les posts sauvegardé par l'utilisateur
 
 //Changer l'image de profil de l'utilisateur
