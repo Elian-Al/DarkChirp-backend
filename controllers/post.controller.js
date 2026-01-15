@@ -240,18 +240,20 @@ exports.getLikedPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
 
     try {
-        const likedPosts = await User.findById(userId)
-            .select('likedPosts')
-            .populate('likedPosts', 'createdAt content _id')
-            .sort({ createdAt: -1 })
+        const userLikedPosts = await User.findById(userId).select('likedPosts')
+            
+        const likedPosts = await Post.find({_id: { $in: userLikedPosts.likedPosts }})
             .skip(skip)
             .limit(limit)
-
+            .populate('user', 'username firstname lastname profilePicture')
+            .sort({ createdAt: -1 })
+            
         console.log(likedPosts);
 
         res.status(200).json({
             result: true,
-            data: likedPosts
+            data: likedPosts,
+            nbrOfPosts: likedPosts.length,
         });
         
     } catch (error) {
@@ -267,18 +269,20 @@ exports.getSavedPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
 
     try {
-        const savedPosts = await User.findById(userId)
-            .select('savedPosts')
-            .populate('savedPosts', 'createdAt content _id')
-            .sort({ createdAt: -1 })
+        const userSavedPosts = await User.findById(userId).select('savedPosts')        
+
+        const savedPosts = await Post.find({_id: { $in: userSavedPosts.savedPosts }})
             .skip(skip)
             .limit(limit)
+            .populate('user', 'username firstname lastname profilePicture')
+            .sort({ createdAt: -1 })
 
-        console.log(savedPosts);
+        console.log('Saved Posts :', savedPosts);
 
         res.status(200).json({
             result: true,
             data: savedPosts,
+            nbrOfPosts: savedPosts.length,
         });
         
     } catch (error) {
