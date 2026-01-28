@@ -99,4 +99,21 @@ exports.signin = async (req, res) => {
         console.error('Erreur lors du signin :', error);
         res.status(500).json({ result: false, message: 'Erreur serveur lors de la connexion.' });
     }
-}
+};
+
+exports.me = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const userData = await User.findById(userId).select('-_id -password -createdAt -updatedAt -__v').lean();
+
+        res.status(201).json({
+            result: true,
+            userData,
+        })
+        
+    } catch (error) {
+        return res.status(500).json({ result: false, message: 'Erreur lors de la récupération des informations de l\'utilisateur'})
+    }
+    
+};

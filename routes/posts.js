@@ -22,7 +22,7 @@ router.post('/save/:postId', authMiddleware, postController.savePost);
 router.get('/hashtag/:hashtagName', postController.getPostsByHashtag);
 
 //Récuperer les posts d'un utilisateur
-router.get('/user', authMiddleware, postController.getAllUserPosts);
+router.get('/user/mine', authMiddleware, postController.getAllUserPosts);
 
 //Récuperer les posts liké par l'utilisateur
 router.get('/user/liked', authMiddleware, postController.getLikedPosts);
