@@ -1,5 +1,6 @@
 const Post = require('../models/posts');
 const User = require('../models/users');
+const Hashtag = require('../models/hashtags');
 
 const extractHashtags = (text) => {
     const regex = /#(\w+)/g;
@@ -21,7 +22,7 @@ exports.createPost = async (req, res) => {
     }
 
     try {
-        const hashtagsArray = extractHashtags(content);
+        const hashtagsArray = extractHashtags(content);                
 
         const newPost = new Post({
             user: userId,
@@ -32,6 +33,17 @@ exports.createPost = async (req, res) => {
         });
 
         const savedPost = await newPost.save();
+
+        if (hashtagsArray.length > 0) {
+            console.log('hashtagsArray:', hashtagsArray);
+            for (const tag of hashtagsArray) {
+                await Hashtag.updateOne(
+                    { name: tag.toLowerCase() },
+                    { $inc: { count: 1 }},
+                    { upsert: true, new: true }
+                )
+            }
+        };
 
         res.status(201).json({
             result: true,
@@ -76,6 +88,7 @@ exports.deletePost = async (req, res) => {
 
     try {
         const post = await Post.findById(postId);
+        console.log(post.hashtags);
 
         if (!post) {
             return res.status(404).json({ result: false, message: 'Post non trouvé.' });
@@ -92,6 +105,12 @@ exports.deletePost = async (req, res) => {
             { $pull: { likedPosts: postId, savedPosts: postId } }
         );
 
+        if (post.hashtags.length > 0) {            
+            for (let tag of post.hashtags) {
+                await Hashtag.updateOne({ name: tag }, {$inc: {count: -1}});
+            }
+        }
+
         res.status(200).json({
             result: true,
             message: 'Post supprimé avec succès, et références nettoyées.'
@@ -99,8 +118,7 @@ exports.deletePost = async (req, res) => {
 
     } catch (error) {
         console.error('Erreur lors de la suppression du post :', error);
-        res.status(500).json({ result: false, message: 'Erreur serveur lors de la suppression.' });
-        
+        res.status(500).json({ result: false, message: 'Erreur serveur lors de la suppression.' });        
     }
 };
 
@@ -173,6 +191,20 @@ exports.savePost = async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la sauvegarde/désauvegarde :', error);
         res.status(500).json({ result: false, message: 'Erreur serveur lors de l\'opération de sauvegarde.' });
+    }
+};
+
+//Récupérer les Hashtags les plus utilisés
+exports.getTrendingHashtag = async (req, res) => {
+    try {
+        const trendingHashtags = await Hashtag.find({ count: { $gt: 0 }}).sort({count: -1})
+
+        res.status(200).json({
+            result: true,
+            trendingHashtags,
+        });
+    } catch (error) {
+        res.status(500).json({ result: false, message: 'Erreur serveur lors de la récurpération des données.' });        
     }
 };
 

@@ -18,6 +18,9 @@ router.post('/like/:postId', authMiddleware, postController.likePost);
 // Route Save/Unsave (Protégée)
 router.post('/save/:postId', authMiddleware, postController.savePost);
 
+// Route Récupérer les Hashtags les plus utilisés
+router.get('/trendingHashtags', postController.getTrendingHashtag);
+
 // Route Filtrage par Hashtag (Peut être publique)
 router.get('/hashtag/:hashtagName', postController.getPostsByHashtag);
 
