@@ -101,6 +101,7 @@ exports.signin = async (req, res) => {
     }
 };
 
+//Récupérer les infos de l'utilisateur
 exports.me = async (req, res) => {
     const userId = req.userId;
 
@@ -116,4 +117,9 @@ exports.me = async (req, res) => {
         return res.status(500).json({ result: false, message: 'Erreur lors de la récupération des informations de l\'utilisateur'})
     }
     
+};
+
+//Supprimer le compte de l'utilisateur
+exports.delete = async (req, res) => {
+    const userId = req.userId;
 };

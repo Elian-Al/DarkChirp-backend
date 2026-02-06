@@ -218,7 +218,7 @@ exports.getPostsByHashtag = async (req, res) => {
 
     try {
         const posts = await Post.find({
-            hashtags: { $in: [hashtagName.toLowerCase()] }
+            hashtags: { $in: hashtagName.toLowerCase() }
         })
             .populate('user', 'username firstname lastname profilePicture')
             .sort({ createdAt: -1 });
