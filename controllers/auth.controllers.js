@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
+const Post = require('../models/posts');
+const Hashtag = require('../models/hashtags');
 
 //Nombre de hachage
 const hashRounds = 10;
@@ -33,6 +35,7 @@ exports.signup = async (req, res) => {
             lastname,
             email,
             password: hashedPassword,
+            profilePicture: "",
         });
 
         const savedUser = await newUser.save();
@@ -120,6 +123,45 @@ exports.me = async (req, res) => {
 };
 
 //Supprimer le compte de l'utilisateur
-exports.delete = async (req, res) => {
-    const userId = req.userId;
+exports.deleteUser = async (req, res) => {
+    const { password } = req.body;
+    const userId = req.userId;    
+
+    try {
+        const user = await User.findById(userId);
+
+        //Comparaison du mot de passe haché
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ result: false, message: 'Mot de passe incorect.' });
+        }
+
+        const userPosts = await Post.find({ user: userId});
+
+        for (const post of userPosts) {
+            if (post.hashtags.length > 0) {
+                const isUpdated = await Promise.all(post.hashtags.map(tag => 
+                    Hashtag.updateOne({ name: tag }, { $inc: { count: -1 } })
+                ));                
+            };
+        };
+
+        await Post.deleteMany({ user: userId });
+
+        await Post.updateMany(
+            { $or: [{ likes: userId }, { saved: userId }] },
+            { $pull: { likes: userId, saved: userId } }
+        );
+
+        await User.deleteOne({ _id: userId });
+
+        res.status(200).json({
+            result: true,
+            message: "Compte et données associées supprimés avec succès.",
+        });
+
+    } catch (error) {
+        console.error("Erreur suppression compte :", error);        
+        return res.status(500).json({ result: false, message: 'Erreur serveur.'})
+    }
 };

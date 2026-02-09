@@ -17,6 +17,9 @@ router.post('/signin', authController.signin);
 //Récupérer les informations actualiser de l'utilisateur
 router.get('/me', authMiddleware, authController.me);
 
+//Supprimer le compte de l'utilisateur et le contenu associé
+router.delete('/delete-account', authMiddleware, authController.deleteUser);
+
 //Récupérer les informations du profil
 
 //Mettre à jour les informations du profil
