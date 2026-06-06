@@ -1,24 +1,25 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
-const authController = require('../controllers/auth.controllers');
-const authMiddleware = require('../middlewares/auth');
+const authController = require("../controllers/auth.controllers");
+const authMiddleware = require("../middlewares/auth");
+const upload = require("../middlewares/multer");
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get("/", function (req, res, next) {
+    res.send("respond with a resource");
 });
 
 // Création d'un utilisateur
-router.post('/signup', authController.signup);
+router.post("/signup", authController.signup);
 
 //Connexion d'un utilisateur
-router.post('/signin', authController.signin);
+router.post("/signin", authController.signin);
 
 //Récupérer les informations actualiser de l'utilisateur
-router.get('/me', authMiddleware, authController.me);
+router.get("/me", authMiddleware, authController.me);
 
 //Supprimer le compte de l'utilisateur et le contenu associé
-router.delete('/delete-account', authMiddleware, authController.deleteUser);
+router.delete("/delete-account", authMiddleware, authController.deleteUser);
 
 //Récupérer les informations du profil
 
@@ -27,5 +28,6 @@ router.delete('/delete-account', authMiddleware, authController.deleteUser);
 //Récuperer les posts sauvegardé par l'utilisateur
 
 //Changer l'image de profil de l'utilisateur
+router.post("/updateProfilePic", authMiddleware, upload, authController.addProfilePicture);
 
 module.exports = router;
