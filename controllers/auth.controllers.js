@@ -1,32 +1,35 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/users');
-const Post = require('../models/posts');
-const Hashtag = require('../models/hashtags');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../models/users");
+const Post = require("../models/posts");
+const Hashtag = require("../models/hashtags");
+const cloudinary = require("../config/cloudinary");
+const upload = require("../middlewares/multer");
+const path = require("path");
 
 //Nombre de hachage
 const hashRounds = 10;
 
 //Inscription
 exports.signup = async (req, res) => {
-    const { username, firstname, lastname, email, password} = req.body;
+    const { username, firstname, lastname, email, password } = req.body;
 
     if (!username || !firstname || !lastname || !email || !password) {
-        return res.status(400).json({ result: false, message : 'Tous les champs sont requis.' });
+        return res.status(400).json({ result: false, message: "Tous les champs sont requis." });
     }
 
     if (password.length < 6) {
-        return res.status(400).json({ result: false, message: 'Le mot de passe doit contenir au moins 6 caractères.' });
+        return res.status(400).json({ result: false, message: "Le mot de passe doit contenir au moins 6 caractères." });
     }
 
     try {
         const existingUser = await User.findOne({ username: username.toLowerCase() });
         if (existingUser) {
-            return res.status(409).json({ result: false, message: 'Ce nom d\'utilisateur est déjà pris'});
+            return res.status(409).json({ result: false, message: "Ce nom d'utilisateur est déjà pris" });
         }
 
         //Hachage du mot de passe
-        const hashedPassword = await bcrypt.hash(password, hashRounds)
+        const hashedPassword = await bcrypt.hash(password, hashRounds);
 
         //Création du nouvel utilisateur en BDD
         const newUser = new User({
@@ -42,18 +45,17 @@ exports.signup = async (req, res) => {
 
         res.status(201).json({
             result: true,
-            message: 'Compte créé avec succès !',
+            message: "Compte créé avec succès !",
             data: {
                 username: savedUser.username,
                 firstname: savedUser.firstname,
                 lastname: savedUser.lastname,
                 email: savedUser.email,
-            }
+            },
         });
-
     } catch (error) {
-        console.error('Erreur lors de la création du compte :', error);
-        res.status(500).json({ result: false, message: 'Erreur serveur lors de l\'inscription.'});
+        console.error("Erreur lors de la création du compte :", error);
+        res.status(500).json({ result: false, message: "Erreur serveur lors de l'inscription." });
     }
 };
 
@@ -62,28 +64,24 @@ exports.signin = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ result: false, message: 'Veuillez saisr le nom d\'utilisateur et le mot de passe.' });
+        return res.status(400).json({ result: false, message: "Veuillez saisr le nom d'utilisateur et le mot de passe." });
     }
 
     try {
         //Vérification de l'éxistence de l'utilisateur
         const user = await User.findOne({ username: username.toLowerCase() });
         if (!user) {
-            return res.status(401).json({ result: false, message: 'Identifiant ou mot de passe incorrect.' });
-        }        
+            return res.status(401).json({ result: false, message: "Identifiant ou mot de passe incorrect." });
+        }
 
         //Comparaison du mot de passe haché
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ result: false, message: 'Identifiants ou mot de passe incorrect.' });
+            return res.status(401).json({ result: false, message: "Identifiants ou mot de passe incorrect." });
         }
 
         //Génération du Token
-        const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' },
-        );
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
         await User.updateOne({ _id: user._id }, { token });
 
@@ -97,10 +95,60 @@ exports.signin = async (req, res) => {
             savedPosts: user.savedPosts,
             profilePicture: user.profilePicture,
         });
-
     } catch (error) {
-        console.error('Erreur lors du signin :', error);
-        res.status(500).json({ result: false, message: 'Erreur serveur lors de la connexion.' });
+        console.error("Erreur lors du signin :", error);
+        res.status(500).json({ result: false, message: "Erreur serveur lors de la connexion." });
+    }
+};
+
+exports.addProfilePicture = async (req, res) => {
+    const userId = req.userId;
+    try {
+        if (!req.file) {
+            return res.status(400).json({ result: false, message: "Aucun fichier fourni." });
+        }
+
+        const cloudinaryResult = await new Promise((resolve, reject) => {
+            const fileNameWhithoutExt = path.parse(req.file.originalname).name;
+
+            cloudinary.uploader
+                .upload_stream(
+                    {
+                        public_id: `DarkChirp/avatar/${Date.now() + "-" + fileNameWhithoutExt}`,
+                        asset_folder: `DarkChirp/avatar`,
+                        transformation: [
+                            {
+                                width: 400,
+                                height: 400,
+                                crop: "auto",
+                                quality: "auto",
+                            },
+                        ],
+                    },
+                    (error, uploadResult) => {
+                        if (uploadResult) resolve(uploadResult);
+                        else reject(error);
+                    },
+                )
+                .end(req.file.buffer);
+        });
+
+        console.log(cloudinaryResult);
+
+        if (cloudinaryResult.secure_url) {
+            const updateUserProfilePic = await User.findByIdAndUpdate(userId, { profilePicture: cloudinaryResult.secure_url });
+            console.log(updateUserProfilePic);
+        }
+
+        // console.log("result:", result);
+
+        res.status(200).json({
+            result: true,
+            message: "L'image de profile à bien été modifiée.",
+        });
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de l'image :", error);
+        res.status(500).json({ result: false, message: error });
     }
 };
 
@@ -109,23 +157,21 @@ exports.me = async (req, res) => {
     const userId = req.userId;
 
     try {
-        const userData = await User.findById(userId).select('-_id -password -createdAt -updatedAt -__v').lean();
+        const userData = await User.findById(userId).select("-_id -password -createdAt -updatedAt -__v").lean();
 
         res.status(201).json({
             result: true,
             userData,
-        })
-        
+        });
     } catch (error) {
-        return res.status(500).json({ result: false, message: 'Erreur lors de la récupération des informations de l\'utilisateur'})
+        return res.status(500).json({ result: false, message: "Erreur lors de la récupération des informations de l'utilisateur" });
     }
-    
 };
 
 //Supprimer le compte de l'utilisateur
 exports.deleteUser = async (req, res) => {
     const { password } = req.body;
-    const userId = req.userId;    
+    const userId = req.userId;
 
     try {
         const user = await User.findById(userId);
@@ -133,25 +179,20 @@ exports.deleteUser = async (req, res) => {
         //Comparaison du mot de passe haché
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ result: false, message: 'Mot de passe incorect.' });
+            return res.status(401).json({ result: false, message: "Mot de passe incorect." });
         }
 
-        const userPosts = await Post.find({ user: userId});
+        const userPosts = await Post.find({ user: userId });
 
         for (const post of userPosts) {
             if (post.hashtags.length > 0) {
-                const isUpdated = await Promise.all(post.hashtags.map(tag => 
-                    Hashtag.updateOne({ name: tag }, { $inc: { count: -1 } })
-                ));                
-            };
-        };
+                const isUpdated = await Promise.all(post.hashtags.map((tag) => Hashtag.updateOne({ name: tag }, { $inc: { count: -1 } })));
+            }
+        }
 
         await Post.deleteMany({ user: userId });
 
-        await Post.updateMany(
-            { $or: [{ likes: userId }, { saved: userId }] },
-            { $pull: { likes: userId, saved: userId } }
-        );
+        await Post.updateMany({ $or: [{ likes: userId }, { saved: userId }] }, { $pull: { likes: userId, saved: userId } });
 
         await User.deleteOne({ _id: userId });
 
@@ -159,9 +200,8 @@ exports.deleteUser = async (req, res) => {
             result: true,
             message: "Compte et données associées supprimés avec succès.",
         });
-
     } catch (error) {
-        console.error("Erreur suppression compte :", error);        
-        return res.status(500).json({ result: false, message: 'Erreur serveur.'})
+        console.error("Erreur suppression compte :", error);
+        return res.status(500).json({ result: false, message: "Erreur serveur." });
     }
 };
