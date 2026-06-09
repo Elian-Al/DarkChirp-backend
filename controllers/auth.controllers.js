@@ -172,11 +172,12 @@ exports.me = async (req, res) => {
       userData,
     });
   } catch (error) {
-    return res
+    console.error("Erreur lors de la récupération des informations de l'utilisateur :", error);
+    res
       .status(500)
       .json({
         result: false,
-        message: "Erreur lors de la récupération des informations de l'utilisateur",
+        message: "Erreur serveur lors de la récupération des informations de l'utilisateur.",
       });
   }
 };
