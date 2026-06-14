@@ -105,7 +105,7 @@ exports.signin = async (req, res) => {
     });
   } catch (error) {
     console.error("Erreur lors du signin :", error);
-    res.status(500).json({ result: false, message: "Erreur serveur lors de la connexion." });
+    res.status(500).json({ result: false, message: "Erreur serveur lors de la connexion:", error });
   }
 };
 
@@ -173,12 +173,10 @@ exports.me = async (req, res) => {
     });
   } catch (error) {
     console.error("Erreur lors de la récupération des informations de l'utilisateur :", error);
-    res
-      .status(500)
-      .json({
-        result: false,
-        message: "Erreur serveur lors de la récupération des informations de l'utilisateur.",
-      });
+    res.status(500).json({
+      result: false,
+      message: "Erreur serveur lors de la récupération des informations de l'utilisateur.",
+    });
   }
 };
 
